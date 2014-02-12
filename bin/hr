@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.join(File.dirname(__FILE__), *%w{ .. lib })
+
+require 'hr'
+require 'optparse'
+
+options = {}
+option_parser = OptionParser.new do |opts|
+
+  opts.on("-c COLOR") do |color|
+    options[:color] = color
+  end
+
+  opts.on("-b BACKGROUND") do |color|
+    options[:background] = color
+  end
+
+  opts.on("-m MODE") do |mode|
+    options[:mode] = mode
+  end
+end
+
+option_parser.parse!
+Hr.print(*ARGV, options)
