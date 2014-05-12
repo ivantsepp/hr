@@ -4,8 +4,12 @@ require 'hr'
 require 'optparse'
 
 options = {}
-available_colors = String.colors.map(&:to_s)
-available_colors.delete("default")
+available_colors = []
+String.colors.map(&:to_s)
+  .reject{ |a| a == "default" }
+  .each_slice(6) { |a| available_colors << a.join(' ') }
+available_colors.map!{ |a| '  ' << a }
+
 available_modes = String.modes.map(&:to_s)
 available_modes.delete("default")
 option_parser = OptionParser.new do |opts|
@@ -14,15 +18,15 @@ option_parser = OptionParser.new do |opts|
 
 Usage: #{executable_name} [options] pattern"
 
-  opts.on("-c COLOR", "color of the text (#{available_colors.join(", ")})") do |color|
+  opts.on("-c COLOR", "color of the text", *available_colors) do |color|
     options[:color] = color
   end
 
-  opts.on("-b BACKGROUND", "color of the background (#{available_colors.join(", ")})") do |color|
+  opts.on("-b BACKGROUND", "color of the background", *available_colors) do |color|
     options[:background] = color
   end
 
-  opts.on("-m MODE", "the text mode (#{available_modes.join(", ")})") do |mode|
+  opts.on("-m MODE", "the text mode", '  ' << available_modes.join(' ')) do |mode|
     options[:mode] = mode
   end
 end
