@@ -5,9 +5,23 @@ module Hr
   extend self
 
   def get_column_width
-    column_width = `tput cols`.to_i
-    column_width = 80 if column_width <= 0
-    column_width
+    column_width = 0
+
+    if command_exists?('tput')
+      column_width = `tput cols`.to_i
+    elsif command_exists?('stty')
+      column_width = `stty size`.split.last.to_i
+    elsif command_exists?('mode')
+      mode_output = `mode`.split
+      column_width = mode_output[mode_output.index('Columns:')+1].to_i
+    end
+
+    case
+    when column_width.nil?, column_width <= 0
+      return 80
+    else
+      return column_width
+    end
   end
 
   def print(*patterns)
@@ -24,6 +38,14 @@ module Hr
     end.join("\n")
     options = options.inject({}){|tmp,(k,v)| tmp[k.to_sym] = v.to_sym; tmp}
     options.any? ? output.colorize(options) : output
+  end
+  
+  private
+    
+  def command_exists?(command)
+    ENV['PATH'].split(File::PATH_SEPARATOR).any? { |path|
+      (File.exist? File.join(path, "#{command}")) || (File.exist? File.join(path, "#{command}.com")) || (File.exist? File.join(path, "#{command}.exe"))
+    }
   end
 
 end
