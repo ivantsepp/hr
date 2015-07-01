@@ -1,9 +1,27 @@
-require "hr/version"
-require "colorize"
+require 'hr/version'
+require 'colorize'
 
 module Hr
   extend self
 
+  def print(*patterns)
+    Kernel.print string(*patterns)
+  end
+
+  def string(*patterns)
+    options = patterns.last.is_a?(Hash) ? patterns.pop : {}
+    column_width = get_column_width
+    output = patterns.map do |pattern|
+      pattern = pattern.to_s
+      times = (column_width / pattern.length) + 1
+      (pattern * times)[0..column_width - 1]
+    end.join
+    options = options.inject({}){|tmp,(k,v)| tmp[k.to_sym] = v.to_sym; tmp}
+    options.any? ? output.colorize(options) : output
+  end
+  
+  private
+  
   def get_column_width
     column_width = 0
 
@@ -23,29 +41,10 @@ module Hr
       return column_width
     end
   end
-
-  def print(*patterns)
-    puts string(*patterns)
-  end
-
-  def string(*patterns)
-    options = patterns.last.is_a?(Hash) ? patterns.pop : {}
-    column_width = get_column_width
-    output = patterns.map do |pattern|
-      pattern = pattern.to_s
-      times = (column_width / pattern.length) + 1
-      (pattern * times)[0..column_width - 1]
-    end.join("\n")
-    options = options.inject({}){|tmp,(k,v)| tmp[k.to_sym] = v.to_sym; tmp}
-    options.any? ? output.colorize(options) : output
-  end
   
-  private
-    
   def command_exists?(command)
     ENV['PATH'].split(File::PATH_SEPARATOR).any? { |path|
       (File.exist? File.join(path, "#{command}")) || (File.exist? File.join(path, "#{command}.com")) || (File.exist? File.join(path, "#{command}.exe"))
     }
   end
-
 end
